@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Studio | Design Your World</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-icon">F</span>
+        <div>
+            <h1>FASHION STUDIO</h1>
+            <p>CREATE YOUR OWN COLLECTION</p>
+        </div>
+    </div>
+
+    <button class="save-btn" id="saveDesign">Save Design</button>
+</header>
+
+<main class="workspace">
+
+    <aside class="sidebar">
+        <h2>Design tools</h2>
+
+        <button class="tab active" data-tab="sketch">✏️ 2D Sketch Studio</button>
+        <button class="tab" data-tab="mannequin">👗 3D Mannequin Studio</button>
+        <button class="tab" data-tab="collection">📁 My Collection</button>
+
+        <div class="sidebar-info">
+            <p>YOUR CREATIVE SPACE</p>
+            <span>Design • Create • Inspire</span>
+        </div>
+    </aside>
+
+    <section class="main-content">
+
+        <!-- 2D STUDIO -->
+        <section class="page active" id="sketch">
+
+            <div class="page-heading">
+                <div>
+                    <h2>2D Design Studio</h2>
+                    <p>Draw your fashion ideas on the canvas.</p>
+                </div>
+                <span class="tag">SKETCH MODE</span>
+            </div>
+
+            <div class="editor-layout">
+
+                <div class="canvas-card">
+                    <div class="canvas-toolbar">
+                        <span>Design Canvas</span>
+                        <button id="clearCanvas">Clear</button>
+                    </div>
+
+                    <canvas id="designCanvas" width="900" height="650"></canvas>
+
+                    <div class="canvas-footer">
+                        <span>Draw using your mouse or finger</span>
+                        <button id="downloadSketch">Download Sketch</button>
+                    </div>
+                </div>
+
+                <div class="tool-panel">
+                    <h3>Drawing tools</h3>
+
+                    <label>Brush colour</label>
+                    <input type="color" id="brushColor" value="#b35b45">
+
+                    <label>Brush size</label>
+                    <input type="range" id="brushSize" min="1" max="35" value="5">
+
+                    <label>Tool</label>
+                    <select id="drawingTool">
+                        <option value="pen">Pen</option>
+                        <option value="eraser">Eraser</option>
+                    </select>
+
+                    <div class="tip">
+                        <strong>Design tip</strong>
+                        <p>Start with the outline of your outfit, then add sleeves, patterns and details.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3D STUDIO -->
+        <section class="page" id="mannequin">
+
+            <div class="page-heading">
+                <div>
+                    <h2>3D Mannequin Studio</h2>
+                    <p>Style your outfit and view it in 3D.</p>
+                </div>
+                <span class="tag">3D MODE</span>
+            </div>
+
+            <div class="three-layout">
+
+                <div class="three-card">
+                    <div class="three-toolbar">
+                        <span>Virtual Mannequin</span>
+                        <button id="rotateModel">Pause Rotation</button>
+                    </div>
+
+                    <div id="threeContainer"></div>
+
+                    <p class="model-hint">Drag to rotate • Scroll to zoom</p>
+                </div>
+
+                <div class="tool-panel">
+                    <h3>Outfit Designer</h3>
+
+                    <label>Outfit type</label>
+                    <select id="outfitType">
+                        <option value="top">Top</option>
+                        <option value="skirt">Skirt</option>
+                        <option value="gown">Gown</option>
+                    </select>
+
+                    <label>Fabric colour</label>
+                    <input type="color" id="fabricColor" value="#b35b45">
+
+                    <label>Fabric pattern</label>
+                    <select id="fabricPattern">
+                        <option value="plain">Plain</option>
+                        <option value="soft">Soft finish</option>
+                        <option value="shiny">Silky finish</option>
+                    </select>
+
+                    <div class="swatches">
+                        <span data-color="#b35b45" style="background:#b35b45"></span>
+                        <span data-color="#263b57" style="background:#263b57"></span>
+                        <span data-color="#c49a54" style="background:#c49a54"></span>
+                        <span data-color="#667c62" style="background:#667c62"></span>
+                        <span data-color="#a77b91" style="background:#a77b91"></span>
+                        <span data-color="#eee1ca" style="background:#eee1ca"></span>
+                    </div>
+
+                    <button class="apply-btn" id="applyOutfit">Apply Design</button>
+
+                    <div class="tip">
+                        <strong>Style your mannequin</strong>
+                        <p>Experiment with different outfit types and fabric colours.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- COLLECTION -->
+        <section class="page" id="collection">
+
+            <div class="page-heading">
+                <div>
+                    <h2>My Collection</h2>
+                    <p>Your saved fashion creations.</p>
+                </div>
+                <span class="tag">MY DESIGNS</span>
+            </div>
+
+            <div id="collectionGrid" class="collection-grid"></div>
+
+            <p id="emptyMessage" class="empty-message">
+                No designs saved yet. Start creating something!
+            </p>
+
+        </section>
+
+    </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+
+</body>
+                      </html>
+                      
