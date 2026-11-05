@@ -2,19 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Your existing metadata, title and CSS link -->
-</head>
-
-<body>
-    <!-- Your existing website content -->
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fashion Studio | Design Your World</title>
-
     <link rel="stylesheet" href="style.css">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
+</head>
 
 <body>
 
@@ -26,15 +18,12 @@
             <p>CREATE YOUR OWN COLLECTION</p>
         </div>
     </div>
-
     <button class="save-btn" id="saveDesign">Save Design</button>
 </header>
 
 <main class="workspace">
-
     <aside class="sidebar">
         <h2>Design tools</h2>
-
         <button class="tab active" data-tab="sketch">✏️ 2D Sketch Studio</button>
         <button class="tab" data-tab="mannequin">👗 3D Mannequin Studio</button>
         <button class="tab" data-tab="collection">📁 My Collection</button>
@@ -47,9 +36,7 @@
 
     <section class="main-content">
 
-        <!-- 2D STUDIO -->
         <section class="page active" id="sketch">
-
             <div class="page-heading">
                 <div>
                     <h2>2D Design Studio</h2>
@@ -59,7 +46,6 @@
             </div>
 
             <div class="editor-layout">
-
                 <div class="canvas-card">
                     <div class="canvas-toolbar">
                         <span>Design Canvas</span>
@@ -76,7 +62,6 @@
 
                 <div class="tool-panel">
                     <h3>Drawing tools</h3>
-
                     <label>Brush colour</label>
                     <input type="color" id="brushColor" value="#b35b45">
 
@@ -94,13 +79,10 @@
                         <p>Start with the outline of your outfit, then add sleeves, patterns and details.</p>
                     </div>
                 </div>
-
             </div>
         </section>
 
-        <!-- 3D STUDIO -->
         <section class="page" id="mannequin">
-
             <div class="page-heading">
                 <div>
                     <h2>3D Mannequin Studio</h2>
@@ -110,7 +92,6 @@
             </div>
 
             <div class="three-layout">
-
                 <div class="three-card">
                     <div class="three-toolbar">
                         <span>Virtual Mannequin</span>
@@ -118,7 +99,6 @@
                     </div>
 
                     <div id="threeContainer"></div>
-
                     <p class="model-hint">Drag to rotate • Scroll to zoom</p>
                 </div>
 
@@ -158,13 +138,10 @@
                         <p>Experiment with different outfit types and fabric colours.</p>
                     </div>
                 </div>
-
             </div>
         </section>
 
-        <!-- COLLECTION -->
         <section class="page" id="collection">
-
             <div class="page-heading">
                 <div>
                     <h2>My Collection</h2>
@@ -178,7 +155,6 @@
             <p id="emptyMessage" class="empty-message">
                 No designs saved yet. Start creating something!
             </p>
-
         </section>
 
     </section>
@@ -186,8 +162,10 @@
 
 <div id="toast" class="toast"></div>
 
+<!-- Load Three.js before your JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
 <script src="script.js"></script>
 
 </body>
-                      </html>
-                      
+    </html>
+    
