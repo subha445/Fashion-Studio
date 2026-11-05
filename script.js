@@ -865,4 +865,29 @@ function renderCollection() {
         title.textContent = design.name;
 
         const details = document.createElement("p");
-        details.t
+      
+details.textContent = `${design.type} • ${design.date}`;
+
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "Delete";
+
+deleteButton.addEventListener("click", () => {
+    savedDesigns = savedDesigns.filter(
+        item => item.id !== design.id
+    );
+
+    localStorage.setItem(
+        "fashionDesigns",
+        JSON.stringify(savedDesigns)
+    );
+
+    renderCollection();
+});
+
+card.append(image, title, details, deleteButton);
+grid.appendChild(card);
+});
+}
+
+loadSavedDesigns();
+
