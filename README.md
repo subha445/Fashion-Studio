@@ -1,80 +1,89 @@
-✨ FASHION STUDIO — Design Your Imagination
+𓍢ִ໋🌷͙֒ FASHION STUDIO
+
+THE CREATIVE FASHION JOURNAL · ISSUE NO. 01
 
 <p align="center">
-  <strong>🎀 Your Creative Fashion Universe Starts Here! 🎀</strong>
+  ✧･ﾟ: *✧･ﾟ:* &nbsp; DESIGN YOUR DREAM &nbsp; *:･ﾟ✧*:･ﾟ✧
 </p><p align="center">
-  A stylish 2D & 3D Fashion Design Studio where creativity meets technology.
+  **A little world of fashion, creativity & imagination.**
 </p>---
 
-💎 Welcome to Fashion Studio
+📖 DEAR CREATIVE SOUL,
 
-Fashion Studio is an interactive fashion-design experience built for creative minds. Sketch your own outfits, style a virtual mannequin, explore fabric colours and patterns, and save your favourite designs in your personal collection.
+Welcome to Fashion Studio!
 
-Your ideas. Your style. Your runway.
+This is more than just a website. It's your own little fashion journal — a place to sketch ideas, experiment with colours, style outfits and bring imagination into a digital world.
 
-🌸 Features
+Every design begins with an idea. Let's turn yours into something beautiful.
 
-Feature| Description
-🎨 2D Sketch Studio| Draw and design outfits on a digital canvas
-👗 3D Mannequin Studio| Explore outfits on a virtual mannequin
-🌈 Colour Customisation| Experiment with different fabric colours
-✨ Fabric Patterns| Try different fabric finishes
-🔄 3D Rotation| Rotate the mannequin to explore your design
-💾 Save Designs| Keep your favourite creations
-🖼️ My Collection| View and manage saved designs
-📱 Responsive Design| Enjoy the studio on different screen sizes
+---
 
-🪡 Two Creative Worlds
+🎀 YOUR CREATIVE SPACE
 
-🎨 01 — 2D Fashion Sketching
+01 · THE SKETCHBOOK
 
-- Draw using different brush sizes.
-- Choose your favourite colours.
-- Switch between drawing and erasing.
-- Download your sketches.
+✎ 2D Fashion Studio
 
-👑 02 — 3D Fashion Designing
+- Draw your own fashion ideas.
+- Experiment with brush colours and sizes.
+- Erase, restart and download your sketches.
 
-- Style a virtual mannequin.
+02 · THE FITTING ROOM
+
+👗 3D Mannequin Studio
+
+- Explore outfits on a 3D mannequin.
 - Choose tops, skirts and gowns.
-- Experiment with fabric colours.
-- Explore your outfit from different angles.
+- Customise fabric colours and finishes.
+- Rotate your mannequin to explore your design.
 
-🛠️ Built With
+03 · THE MEMORY BOOK
 
-- HTML5
-- CSS3
-- JavaScript
-- Three.js
-- HTML Canvas API
-- Local Storage
+♡ My Collection
 
-🚀 Getting Started
+- Save your favourite designs.
+- Revisit your creations.
+- Build your own digital fashion collection.
 
-1. Open the repository.
-2. Download or clone the project.
-3. Open "index.html" in your browser.
-4. Start creating your fashion designs!
+---
 
-📁 Project Structure
+🪞 THE DESIGNER'S TOOLKIT
+
+"HTML5" · "CSS3" · "JavaScript" · "Three.js" · "Canvas API" · "Local Storage"
+
+---
+
+🌐 STEP INTO THE STUDIO
+
+<p align="center">
+  **✧ YOUR RUNWAY IS WAITING ✧**
+</p><p align="center">
+  [🎀 OPEN FASHION STUDIO — LIVE DEMO](https://subha445.github.io/Fashion-Studio/)
+</p>---
+
+🧵 BEHIND THE PAGES
 
 Fashion-Studio/
 │
-├── index.html
-├── style.css
-├── script.js
-└── README.md
+├── index.html    → The studio
+├── style.css     → The aesthetic
+├── script.js     → The magic
+└── README.md     → The journal
 
-🎀 Project Vision
+---
 
-Fashion Studio brings together art, imagination and interactive web technology.
+🌷 A NOTE FROM THE DESIGNER
 
-Whether you're sketching a new outfit or experimenting with a 3D look, this studio gives your creativity a place to shine.
+Fashion is not just about what we wear. It's about what we imagine, create and express.
+
+This project brings art and technology together in one creative space.
+
+Dream it. Sketch it. Style it. Save it.
 
 <p align="center">
-  <strong>✨ DREAM IT. DESIGN IT. STYLE IT. ✨</strong>
-</p>---
-
-<p align="center">
-  Made with 💗, creativity and JavaScript.
+  ୨୧ ─────────────── ୨୧
+</p><p align="center">
+  **MADE WITH ♡ AND A LITTLE BIT OF MAGIC**
+</p><p align="center">
+  *Fashion Studio · Where imagination becomes design.*
 </p>
