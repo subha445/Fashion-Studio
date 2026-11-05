@@ -1,52 +1,65 @@
-/* ==========================================
-   FASHION STUDIO — PREMIUM 3D EDITION
-========================================== */
+
+/* =========================================
+   FASHION STUDIO — COMPLETE EDITION
+========================================= */
 
 const $ = id => document.getElementById(id);
+const THREE = window.THREE;
 
 let currentPage = "sketch";
 let savedDesigns = [];
-let scene, camera, renderer, mannequin, outfit;
+
+let scene, camera, renderer;
+let mannequin, outfit;
 let initialized3D = false;
 let rotating = true;
-let animationId = null;
+let dragging = false;
+let previousX = 0;
 
-const THREE = window.THREE;
+const STORAGE_KEY = "fashionDesigns";
 
-// ==========================================
-// NOTIFICATIONS
-// ==========================================
+/* =========================================
+   NOTIFICATIONS
+========================================= */
 
 function showToast(message) {
     const toast = $("toast");
+
+    if (!toast) return;
+
     toast.textContent = message;
     toast.classList.add("show");
 
     clearTimeout(showToast.timer);
+
     showToast.timer = setTimeout(() => {
         toast.classList.remove("show");
-    }, 2400);
+    }, 2500);
 }
 
-// ==========================================
-// NAVIGATION
-// ==========================================
+/* =========================================
+   NAVIGATION
+========================================= */
 
 document.querySelectorAll(".tab").forEach(button => {
     button.addEventListener("click", () => {
         currentPage = button.dataset.tab;
 
-        document.querySelectorAll(".tab").forEach(tab =>
-            tab.classList.toggle("active", tab === button)
-        );
+        document.querySelectorAll(".tab").forEach(tab => {
+            tab.classList.toggle("active", tab === button);
+        });
 
-        document.querySelectorAll(".page").forEach(page =>
-            page.classList.toggle("active", page.id === currentPage)
-        );
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.toggle(
+                "active",
+                page.id === currentPage
+            );
+        });
 
         if (currentPage === "mannequin") {
             initialize3D();
-            setTimeout(resize3D, 100);
+
+            setTimeout(resize3D, 150);
         }
 
         if (currentPage === "collection") {
@@ -55,9 +68,9 @@ document.querySelectorAll(".tab").forEach(button => {
     });
 });
 
-// ==========================================
-// 2D SKETCH STUDIO
-// ==========================================
+/* =========================================
+   2D SKETCH STUDIO
+========================================= */
 
 const canvas = $("designCanvas");
 const ctx = canvas.getContext("2d");
@@ -66,20 +79,28 @@ let drawing = false;
 let lastX = 0;
 let lastY = 0;
 
+ctx.fillStyle = "#fffefa";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 function canvasPosition(event) {
     const rect = canvas.getBoundingClientRect();
 
     return {
-        x: (event.clientX - rect.left) * canvas.width / rect.width,
-        y: (event.clientY - rect.top) * canvas.height / rect.height
+        x: (event.clientX - rect.left) *
+            canvas.width / rect.width,
+
+        y: (event.clientY - rect.top) *
+            canvas.height / rect.height
     };
 }
 
 canvas.addEventListener("pointerdown", event => {
     drawing = true;
+
     canvas.setPointerCapture(event.pointerId);
 
     const point = canvasPosition(event);
+
     lastX = point.x;
     lastY = point.y;
 });
@@ -108,40 +129,54 @@ canvas.addEventListener("pointermove", event => {
     lastY = point.y;
 });
 
-["pointerup", "pointercancel", "lostpointercapture"].forEach(event => {
-    canvas.addEventListener(event, () => drawing = false);
+["pointerup", "pointercancel", "lostpointercapture"].forEach(type => {
+    canvas.addEventListener(type, () => {
+        drawing = false;
+    });
 });
 
 $("clearCanvas").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    showToast("Sketch cleared");
+
+    ctx.fillStyle = "#fffefa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    showToast("Canvas cleared!");
 });
 
 $("downloadSketch").addEventListener("click", () => {
     const link = document.createElement("a");
-    link.download = "fashion-sketch.png";
+
+    link.download = "my-fashion-sketch.png";
     link.href = canvas.toDataURL("image/png");
+
     link.click();
+
+    showToast("Sketch downloaded!");
 });
 
-// ==========================================
-// 3D MATERIALS AND HELPERS
-// ==========================================
+/* =========================================
+   3D MATERIALS
+========================================= */
 
-function material(color, roughness = 0.6, metalness = 0) {
+function createMaterial(color, roughness = 0.6, metalness = 0) {
     return new THREE.MeshStandardMaterial({
         color,
         roughness,
-        metalness
+        metalness,
+        side: THREE.DoubleSide
     });
 }
 
 function addMesh(parent, geometry, mat, x, y, z) {
     const mesh = new THREE.Mesh(geometry, mat);
+
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+
     parent.add(mesh);
+
     return mesh;
 }
 
@@ -154,10 +189,11 @@ function addBall(parent, mat, x, y, z, sx, sy, sz) {
     );
 
     mesh.scale.set(sx, sy, sz);
+
     return mesh;
 }
 
-function addSegment(parent, mat, start, end, radius) {
+function addSegment(parent, mat, start, end, radius, endRadius) {
     const a = new THREE.Vector3(...start);
     const b = new THREE.Vector3(...end);
 
@@ -167,16 +203,17 @@ function addSegment(parent, mat, start, end, radius) {
     const mesh = addMesh(
         parent,
         new THREE.CylinderGeometry(
-            radius * 0.88,
+            endRadius || radius,
             radius,
             length,
-            24
+            32
         ),
         mat,
         0, 0, 0
     );
 
     mesh.position.copy(a).add(b).multiplyScalar(0.5);
+
     mesh.quaternion.setFromUnitVectors(
         new THREE.Vector3(0, 1, 0),
         direction.normalize()
@@ -194,15 +231,15 @@ function addLathe(parent, points, mat) {
     return addMesh(parent, geometry, mat, 0, 0, 0);
 }
 
-// ==========================================
-// INITIALISE SHOWROOM
-// ==========================================
+/* =========================================
+   3D SHOWROOM
+========================================= */
 
 function initialize3D() {
     if (initialized3D) return;
 
     if (!THREE) {
-        showToast("3D library not loaded. Check your internet.");
+        showToast("Three.js could not load. Check internet.");
         return;
     }
 
@@ -211,9 +248,7 @@ function initialize3D() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#e9dfd2");
 
-    camera = new THREE.PerspectiveCamera(
-        35, 1, 0.1, 100
-    );
+    camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
 
     camera.position.set(0, 2.35, 8.3);
     camera.lookAt(0, 1.85, 0);
@@ -236,56 +271,59 @@ function initialize3D() {
 
     container.appendChild(renderer.domElement);
 
-    // SHOWROOM LIGHTING
+    /* LIGHTING */
 
     scene.add(
         new THREE.HemisphereLight("#ffffff", "#a58b75", 2)
     );
 
     const keyLight = new THREE.DirectionalLight("#fff6e8", 3);
+
     keyLight.position.set(4, 7, 5);
     keyLight.castShadow = true;
+
     scene.add(keyLight);
 
     const fillLight = new THREE.DirectionalLight("#e8c8d0", 1.6);
+
     fillLight.position.set(-5, 4, 3);
+
     scene.add(fillLight);
 
     const rimLight = new THREE.PointLight("#f5d5a8", 1.5, 12);
+
     rimLight.position.set(0, 4, -3);
+
     scene.add(rimLight);
 
-    // FLOOR
+    /* FLOOR */
 
     const floor = addMesh(
         scene,
         new THREE.CircleGeometry(5, 80),
-        material("#d7c7b6", 0.9),
+        createMaterial("#d7c7b6", 0.9),
         0, -0.12, 0
     );
 
     floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
 
-    // DISPLAY PLATFORM
+    /* PLATFORM */
 
-    const platform = addMesh(
+    addMesh(
         scene,
         new THREE.CylinderGeometry(1.45, 1.52, 0.16, 80),
-        material("#f9f2e9", 0.35),
+        createMaterial("#f9f2e9", 0.35),
         0, 0.02, 0
     );
 
-    platform.castShadow = true;
-
-    const goldRing = addMesh(
+    const ring = addMesh(
         scene,
         new THREE.TorusGeometry(1.47, 0.018, 12, 90),
-        material("#c5a16b", 0.3, 0.65),
+        createMaterial("#c5a16b", 0.3, 0.65),
         0, 0.105, 0
     );
 
-    goldRing.rotation.x = Math.PI / 2;
+    ring.rotation.x = Math.PI / 2;
 
     createMannequin();
     updateOutfit();
@@ -297,20 +335,20 @@ function initialize3D() {
     animate3D();
 }
 
-// ==========================================
-// DETAILED MANNEQUIN
-// ==========================================
+/* =========================================
+   BASE FASHION MODEL
+========================================= */
 
 function createMannequin() {
     mannequin = new THREE.Group();
 
-    const skin = material("#d9b99d", 0.72);
-    const skinLight = material("#e5c9ae", 0.7);
-    const hair = material("#30211f", 0.42);
-    const dark = material("#302321", 0.35);
-    const lips = material("#a75f63", 0.5);
+    const skin = createMaterial("#d9b99d");
+    const skinLight = createMaterial("#e5c9ae");
+    const hair = createMaterial("#30211f", 0.42);
+    const dark = createMaterial("#302321", 0.35);
+    const lips = createMaterial("#a75f63");
 
-    // TORSO — SMOOTH BODY SHAPE
+    /* BODY */
 
     addLathe(mannequin, [
         [0.20, 1.72],
@@ -324,7 +362,7 @@ function createMannequin() {
         [0.17, 3.12]
     ], skin);
 
-    // NECK
+    /* NECK */
 
     addLathe(mannequin, [
         [0.105, 3.02],
@@ -332,7 +370,7 @@ function createMannequin() {
         [0.12, 3.25]
     ], skinLight);
 
-    // HEAD AND FACE
+    /* HEAD */
 
     addBall(
         mannequin, skinLight,
@@ -340,20 +378,21 @@ function createMannequin() {
         0.255, 0.34, 0.235
     );
 
-    // JAW
-
     addBall(
         mannequin, skinLight,
         0, 3.36, 0.035,
         0.19, 0.16, 0.19
     );
 
-    // EARS
+    /* EARS */
 
-    addBall(mannequin, skin, -0.255, 3.52, 0, 0.045, 0.075, 0.055);
-    addBall(mannequin, skin, 0.255, 3.52, 0, 0.045, 0.075, 0.055);
+    addBall(mannequin, skin, -0.255, 3.52, 0,
+        0.045, 0.075, 0.055);
 
-    // NOSE
+    addBall(mannequin, skin, 0.255, 3.52, 0,
+        0.045, 0.075, 0.055);
+
+    /* NOSE */
 
     addBall(
         mannequin, skin,
@@ -361,33 +400,15 @@ function createMannequin() {
         0.045, 0.075, 0.065
     );
 
-    // EYES
+    /* EYES */
 
-    addBall(mannequin, dark, -0.095, 3.56, 0.207, 0.035, 0.023, 0.018);
-    addBall(mannequin, dark, 0.095, 3.56, 0.207, 0.035, 0.023, 0.018);
+    addBall(mannequin, dark, -0.095, 3.56, 0.207,
+        0.035, 0.023, 0.018);
 
-    // EYE HIGHLIGHTS
+    addBall(mannequin, dark, 0.095, 3.56, 0.207,
+        0.035, 0.023, 0.018);
 
-    addBall(mannequin, skinLight, -0.103, 3.57, 0.224, 0.009, 0.009, 0.008);
-    addBall(mannequin, skinLight, 0.087, 3.57, 0.224, 0.009, 0.009, 0.008);
-
-    // EYEBROWS
-
-    addSegment(
-        mannequin, hair,
-        [-0.15, 3.61, 0.205],
-        [-0.045, 3.62, 0.215],
-        0.012
-    );
-
-    addSegment(
-        mannequin, hair,
-        [0.045, 3.62, 0.215],
-        [0.15, 3.61, 0.205],
-        0.012
-    );
-
-    // LIPS
+    /* MOUTH */
 
     addBall(
         mannequin, lips,
@@ -395,7 +416,7 @@ function createMannequin() {
         0.065, 0.018, 0.015
     );
 
-    // HAIR CAP
+    /* HAIR */
 
     const hairCap = new THREE.Mesh(
         new THREE.SphereGeometry(
@@ -405,57 +426,48 @@ function createMannequin() {
     );
 
     hairCap.position.set(0, 3.58, -0.005);
-    hairCap.castShadow = true;
+
     mannequin.add(hairCap);
 
-    // BACK HAIR
+    addBall(mannequin, hair, 0, 3.39, -0.12,
+        0.245, 0.32, 0.17);
 
-    addBall(
-        mannequin, hair,
-        0, 3.39, -0.12,
-        0.245, 0.32, 0.17
-    );
+    addBall(mannequin, hair, -0.225, 3.47, -0.015,
+        0.065, 0.22, 0.085);
 
-    // HAIR SIDES
+    addBall(mannequin, hair, 0.225, 3.47, -0.015,
+        0.065, 0.22, 0.085);
 
-    addBall(mannequin, hair, -0.225, 3.47, -0.015, 0.065, 0.22, 0.085);
-    addBall(mannequin, hair, 0.225, 3.47, -0.015, 0.065, 0.22, 0.085);
+    /* SHOULDERS */
 
-    // SHOULDERS
+    addBall(mannequin, skin, -0.43, 2.91, 0,
+        0.20, 0.16, 0.18);
 
-    addBall(mannequin, skin, -0.43, 2.91, 0, 0.20, 0.16, 0.18);
-    addBall(mannequin, skin, 0.43, 2.91, 0, 0.20, 0.16, 0.18);
+    addBall(mannequin, skin, 0.43, 2.91, 0,
+        0.20, 0.16, 0.18);
 
-    // ARMS
+    /* ARMS */
 
     const arms = [
-        [-0.49, 2.91, 0, -0.61, 2.42, 0],
-        [-0.61, 2.42, 0, -0.66, 1.96, 0.02],
-        [0.49, 2.91, 0, 0.61, 2.42, 0],
-        [0.61, 2.42, 0, 0.66, 1.96, 0.02]
+        [[-0.49, 2.91, 0], [-0.61, 2.42, 0]],
+        [[-0.61, 2.42, 0], [-0.66, 1.96, 0.02]],
+        [[0.49, 2.91, 0], [0.61, 2.42, 0]],
+        [[0.61, 2.42, 0], [0.66, 1.96, 0.02]]
     ];
 
-    arms.forEach(points => {
-        addSegment(
-            mannequin,
-            skin,
-            points.slice(0, 3),
-            points.slice(3, 6),
-            0.105
-        );
+    arms.forEach(([a, b]) => {
+        addSegment(mannequin, skin, a, b, 0.105);
     });
 
-    // ELBOWS
+    /* HANDS */
 
-    addBall(mannequin, skin, -0.61, 2.42, 0, 0.105, 0.11, 0.105);
-    addBall(mannequin, skin, 0.61, 2.42, 0, 0.105, 0.11, 0.105);
+    addBall(mannequin, skinLight, -0.67, 1.84, 0.025,
+        0.095, 0.13, 0.065);
 
-    // PALMS
+    addBall(mannequin, skinLight, 0.67, 1.84, 0.025,
+        0.095, 0.13, 0.065);
 
-    addBall(mannequin, skinLight, -0.67, 1.84, 0.025, 0.095, 0.13, 0.065);
-    addBall(mannequin, skinLight, 0.67, 1.84, 0.025, 0.095, 0.13, 0.065);
-
-    // FINGERS
+    /* FINGERS */
 
     [-1, 1].forEach(side => {
         for (let i = 0; i < 4; i++) {
@@ -469,87 +481,218 @@ function createMannequin() {
                 0.018
             );
         }
-
-        addSegment(
-            mannequin,
-            skinLight,
-            [side * 0.59, 1.86, 0.06],
-            [side * 0.54, 1.78, 0.07],
-            0.023
-        );
     });
 
-    // HIPS
+    /* HIPS */
 
-    addBall(
-        mannequin, skin,
-        0, 1.67, 0,
-        0.39, 0.32, 0.25
-    );
+    addBall(mannequin, skin, 0, 1.67, 0,
+        0.39, 0.32, 0.25);
 
-    // LEGS
+    /* LEGS */
 
-    addSegment(
-        mannequin, skin,
+    addSegment(mannequin, skin,
         [-0.19, 1.56, 0],
         [-0.20, 0.78, 0],
-        0.145
-    );
+        0.145, 0.13);
 
-    addSegment(
-        mannequin, skin,
+    addSegment(mannequin, skin,
         [0.19, 1.56, 0],
         [0.20, 0.78, 0],
-        0.145
-    );
+        0.145, 0.13);
 
-    // KNEES
+    addBall(mannequin, skin, -0.20, 0.78, 0,
+        0.145, 0.15, 0.14);
 
-    addBall(mannequin, skin, -0.20, 0.78, 0, 0.145, 0.15, 0.14);
-    addBall(mannequin, skin, 0.20, 0.78, 0, 0.145, 0.15, 0.14);
+    addBall(mannequin, skin, 0.20, 0.78, 0,
+        0.145, 0.15, 0.14);
 
-    // LOWER LEGS
-
-    addSegment(
-        mannequin, skin,
+    addSegment(mannequin, skin,
         [-0.20, 0.78, 0],
         [-0.20, 0.20, 0],
-        0.105
-    );
+        0.105, 0.09);
 
-    addSegment(
-        mannequin, skin,
+    addSegment(mannequin, skin,
         [0.20, 0.78, 0],
         [0.20, 0.20, 0],
-        0.105
-    );
+        0.105, 0.09);
 
-    // FEET
+    /* FEET */
 
-    addBall(
-        mannequin, skinLight,
-        -0.20, 0.12, 0.09,
-        0.13, 0.10, 0.24
-    );
+    addBall(mannequin, skinLight, -0.20, 0.12, 0.09,
+        0.13, 0.10, 0.24);
 
-    addBall(
-        mannequin, skinLight,
-        0.20, 0.12, 0.09,
-        0.13, 0.10, 0.24
-    );
+    addBall(mannequin, skinLight, 0.20, 0.12, 0.09,
+        0.13, 0.10, 0.24);
 
     scene.add(mannequin);
 }
 
-// ==========================================
-// TAILORED OUTFIT DESIGNER
-// ==========================================
+/* =========================================
+   FABRIC MATERIAL
+========================================= */
+
+function getFabricMaterial(color, pattern, fabricType) {
+    let roughness = 0.65;
+    let metalness = 0.01;
+
+    if (fabricType === "silk" || fabricType === "satin") {
+        roughness = 0.25;
+    }
+
+    if (fabricType === "denim") {
+        roughness = 0.85;
+    }
+
+    if (fabricType === "velvet") {
+        roughness = 0.95;
+    }
+
+    if (pattern === "shiny") {
+        roughness = 0.2;
+        metalness = 0.12;
+    }
+
+    if (pattern === "soft") {
+        roughness = 0.9;
+    }
+
+    return createMaterial(color, roughness, metalness);
+}
+
+/* =========================================
+   CLOTHING HELPERS
+========================================= */
+
+function createTop(group, fabric, style) {
+    let bottom = 2.02;
+
+    if (style === "crop") bottom = 2.36;
+    if (style === "shirt") bottom = 1.98;
+    if (style === "hoodie") bottom = 1.92;
+    if (style === "sweater") bottom = 1.94;
+
+    addLathe(group, [
+        [0.30, bottom],
+        [0.34, bottom + 0.12],
+        [0.34, 2.42],
+        [0.40, 2.70],
+        [0.46, 2.91],
+        [0.30, 3.02]
+    ], fabric);
+
+    const sleeveLength =
+        style === "tshirt" || style === "crop" ? 2.63 : 2.43;
+
+    addSegment(
+        group, fabric,
+        [-0.43, 2.91, 0],
+        [-0.61, sleeveLength, 0],
+        0.13
+    );
+
+    addSegment(
+        group, fabric,
+        [0.43, 2.91, 0],
+        [0.61, sleeveLength, 0],
+        0.13
+    );
+
+    if (style === "shirt" || style === "blouse") {
+        const buttons = createMaterial("#f2dfbd", 0.3);
+
+        for (let i = 0; i < 4; i++) {
+            addBall(
+                group, buttons,
+                0, 2.82 - i * 0.16, 0.405,
+                0.018, 0.018, 0.012
+            );
+        }
+    }
+
+    if (style === "hoodie") {
+        addBall(group, fabric, 0, 3.02, -0.08,
+            0.23, 0.20, 0.18);
+
+        addSegment(group, fabric,
+            [-0.12, 2.12, 0.33],
+            [0.12, 2.12, 0.33],
+            0.025);
+    }
+}
+
+function createSkirt(group, fabric, style) {
+    let hem = 0.78;
+
+    if (style === "shorts") hem = 1.40;
+    if (style === "trousers") hem = 0.22;
+    if (style === "jeans") hem = 0.22;
+
+    const waist = style === "shorts" ? 1.99 : 2.02;
+
+    if (style === "skirt") {
+        addLathe(group, [
+            [0.35, waist],
+            [0.40, 1.90],
+            [0.47, 1.62],
+            [0.60, 1.25],
+            [0.76, hem]
+        ], fabric);
+
+        return;
+    }
+
+    if (style === "shorts") {
+        addLathe(group, [
+            [0.36, 2.02],
+            [0.42, 1.90],
+            [0.43, 1.48],
+            [0.24, 1.42]
+        ], fabric);
+
+        return;
+    }
+
+    [-1, 1].forEach(side => {
+        const x = side * 0.20;
+
+        addSegment(
+            group, fabric,
+            [x, 1.72, 0],
+            [x, 0.23, 0],
+            style === "jeans" ? 0.15 : 0.14,
+            0.105
+        );
+    });
+}
+
+function createDress(group, fabric, style) {
+    createTop(group, fabric, "top");
+
+    let hem = 0.72;
+
+    if (style === "party") hem = 1.15;
+    if (style === "maxi") hem = 0.30;
+
+    addLathe(group, [
+        [0.35, 2.08],
+        [0.41, 1.93],
+        [0.47, 1.70],
+        [0.60, 1.32],
+        [0.76, hem],
+        [0.88, hem - 0.04]
+    ], fabric);
+}
+
+/* =========================================
+   CLOTHING DESIGNER
+========================================= */
 
 function updateOutfit() {
     if (!mannequin) return;
 
     if (outfit) {
         mannequin.remove(outfit);
+
         outfit.traverse(object => {
             if (object.geometry) object.geometry.dispose();
         });
@@ -560,334 +703,210 @@ function updateOutfit() {
     const type = $("outfitType").value;
     const color = $("fabricColor").value;
     const pattern = $("fabricPattern").value;
+    const fabricType = $("fabricType").value;
+    const accessory = $("accessoryType").value;
 
-    const fabric = new THREE.MeshStandardMaterial({
+    const fabric = getFabricMaterial(
         color,
-        roughness:
-            pattern === "shiny" ? 0.22 :
-            pattern === "soft" ? 0.85 : 0.55,
-        metalness: pattern === "shiny" ? 0.25 : 0.02,
-        side: THREE.DoubleSide
-    });
+        pattern,
+        fabricType
+    );
 
-    const trim = material("#c5a16b", 0.32, 0.55);
+    const gold = createMaterial("#c5a16b", 0.3, 0.65);
 
-    // TOP
+    /* TOPS */
 
-    if (type === "top") {
-        addLathe(outfit, [
-            [0.30, 2.02],
-            [0.35, 2.18],
-            [0.34, 2.42],
-            [0.40, 2.70],
-            [0.46, 2.91],
-            [0.30, 3.02]
-        ], fabric);
+    if (
+        ["top", "shirt", "tshirt", "blouse", "crop",
+         "jacket", "blazer", "hoodie", "sweater"].includes(type)
+    ) {
+        createTop(outfit, fabric, type);
 
-        // Sleeves
+        if (type === "jacket" || type === "blazer") {
+            addLathe(outfit, [
+                [0.36, 1.94],
+                [0.39, 2.20],
+                [0.41, 2.70],
+                [0.47, 2.92]
+            ], fabric);
 
-        addSegment(outfit, fabric,
-            [-0.44, 2.91, 0],
-            [-0.62, 2.43, 0],
-            0.13
-        );
+            addSegment(outfit, fabric,
+                [-0.44, 2.91, 0],
+                [-0.63, 2.40, 0],
+                0.14);
 
-        addSegment(outfit, fabric,
-            [0.44, 2.91, 0],
-            [0.62, 2.43, 0],
-            0.13
-        );
+            addSegment(outfit, fabric,
+                [0.44, 2.91, 0],
+                [0.63, 2.40, 0],
+                0.14);
+        }
     }
 
-    // SKIRT
+    /* BOTTOMS */
 
-    if (type === "skirt") {
-        addLathe(outfit, [
-            [0.35, 2.02],
-            [0.40, 1.93],
-            [0.45, 1.72],
-            [0.57, 1.38],
-            [0.73, 1.02],
-            [0.92, 0.78]
-        ], fabric);
+    if (["trousers", "jeans", "shorts", "skirt"].includes(type)) {
+        createSkirt(outfit, fabric, type);
     }
 
-    // GOWN
+    /* DRESSES */
 
-    if (type === "gown") {
-        addLathe(outfit, [
-            [0.30, 2.02],
-            [0.34, 2.20],
-            [0.37, 2.50],
-            [0.44, 2.82],
-            [0.30, 3.02]
-        ], fabric);
+    if (["dress", "gown", "maxi", "party"].includes(type)) {
+        createDress(outfit, fabric, type);
 
-        addLathe(outfit, [
-            [0.36, 2.10],
-            [0.42, 1.93],
-            [0.48, 1.65],
-            [0.61, 1.30],
-            [0.78, 0.98],
-            [0.96, 0.73]
-        ], fabric);
-
-        // Gown sleeves
-
-        addSegment(outfit, fabric,
-            [-0.44, 2.91, 0],
-            [-0.62, 2.43, 0],
-            0.13
-        );
-
-        addSegment(outfit, fabric,
-            [0.44, 2.91, 0],
-            [0.62, 2.43, 0],
-            0.13
-        );
+        if (type === "gown") {
+            addLathe(outfit, [
+                [0.38, 2.05],
+                [0.47, 1.90],
+                [0.60, 1.55],
+                [0.82, 1.10],
+                [1.02, 0.68]
+            ], fabric);
+        }
     }
 
-    // WAIST DETAIL
+    /* TRADITIONAL INSPIRED OPTIONS */
 
-    if (type !== "top") {
+    if (type === "traditional" || type === "ethnic") {
+        createTop(outfit, fabric, "blouse");
+
+        addLathe(outfit, [
+            [0.36, 2.05],
+            [0.42, 1.90],
+            [0.50, 1.65],
+            [0.72, 1.20],
+            [0.88, 0.75]
+        ], fabric);
+
+        addMesh(
+            outfit,
+            new THREE.TorusGeometry(0.39, 0.025, 12, 64),
+            gold,
+            0, 1.95, 0
+        ).rotation.x = Math.PI / 2;
+    }
+
+    /* BELT DETAIL */
+
+    if (
+        ["trousers", "jeans", "shorts", "skirt"].includes(type)
+    ) {
         const belt = addMesh(
             outfit,
-            new THREE.TorusGeometry(0.39, 0.035, 12, 64),
-            trim,
+            new THREE.TorusGeometry(0.39, 0.025, 12, 64),
+            gold,
             0, 2.00, 0
         );
 
         belt.rotation.x = Math.PI / 2;
     }
 
-    // DECORATIVE FRONT DETAIL
+    /* PATTERN DETAILS */
 
-    if (pattern !== "plain") {
-        for (let i = 0; i < 5; i++) {
-            const detail = addMesh(
+    if (pattern === "floral") {
+        const flowerMaterial = createMaterial("#f6dfbd", 0.5);
+
+        for (let i = 0; i < 8; i++) {
+            const angle = i * Math.PI / 4;
+
+            addBall(
                 outfit,
-                new THREE.SphereGeometry(0.025, 12, 12),
-                trim,
-                0, 2.65 - i * 0.12, 0.40
+                flowerMaterial,
+                Math.sin(angle) * 0.30,
+                2.48 + Math.cos(angle) * 0.18,
+                0.35,
+                0.035, 0.035, 0.018
             );
-
-            detail.scale.set(0.7, 1, 0.5);
         }
+    }
+
+    if (pattern === "striped") {
+        const stripeMaterial = createMaterial("#f5e9d8", 0.5);
+
+        for (let i = 0; i < 4; i++) {
+            addSegment(
+                outfit,
+                stripeMaterial,
+                [-0.24, 2.40 + i * 0.12, 0.35],
+                [0.24, 2.40 + i * 0.12, 0.35],
+                0.009
+            );
+        }
+    }
+
+    /* ACCESSORIES */
+
+    if (accessory === "bag") {
+        const bagMaterial = createMaterial("#654638", 0.55);
+
+        addMesh(
+            outfit,
+            new THREE.BoxGeometry(0.22, 0.30, 0.13),
+            bagMaterial,
+            0.76, 1.85, 0.04
+        );
+
+        addMesh(
+            outfit,
+            new THREE.TorusGeometry(0.12, 0.015, 10, 32),
+            gold,
+            0.76, 2.04, 0.04
+        );
+    }
+
+    if (accessory === "belt") {
+        const belt = addMesh(
+            outfit,
+            new THREE.TorusGeometry(0.40, 0.035, 12, 64),
+            gold,
+            0, 2.00, 0
+        );
+
+        belt.rotation.x = Math.PI / 2;
+    }
+
+    if (accessory === "necklace") {
+        const necklace = addMesh(
+            outfit,
+            new THREE.TorusGeometry(0.15, 0.012, 10, 64),
+            gold,
+            0, 3.02, 0.08
+        );
+
+        necklace.rotation.x = Math.PI / 2;
+    }
+
+    if (accessory === "hat") {
+        addMesh(
+            outfit,
+            new THREE.CylinderGeometry(0.22, 0.24, 0.08, 40),
+            fabric,
+            0, 3.87, 0
+        );
     }
 
     mannequin.add(outfit);
 }
 
-// ==========================================
-// OUTFIT CONTROLS
-// ==========================================
+/* =========================================
+   OUTFIT EVENT CONTROLS
+========================================= */
 
-$("applyOutfit").addEventListener("click", () => {
-    if (!initialized3D) initialize3D();
-    updateOutfit();
-    showToast("New outfit designed!");
-});
-
-$("outfitType").addEventListener("change", () => {
-    if (initialized3D) updateOutfit();
-});
-
-$("fabricColor").addEventListener("input", () => {
-    if (initialized3D) updateOutfit();
-});
-
-$("fabricPattern").addEventListener("change", () => {
-    if (initialized3D) updateOutfit();
-});
-
-document.querySelectorAll(".swatches span").forEach(swatch => {
-    swatch.addEventListener("click", () => {
-        $("fabricColor").value = swatch.dataset.color;
+[
+    "outfitType",
+    "fabricColor",
+    "fabricPattern",
+    "fabricType",
+    "accessoryType"
+].forEach(id => {
+    $(id).addEventListener("change", () => {
         if (initialized3D) updateOutfit();
     });
-});
 
-// ==========================================
-// MODEL ROTATION AND ZOOM
-// ==========================================
-
-function setupModelControls() {
-    const container = $("threeContainer");
-
-    let dragging = false;
-    let previousX = 0;
-
-    container.addEventListener("pointerdown", event => {
-        dragging = true;
-        previousX = event.clientX;
-        container.setPointerCapture(event.pointerId);
+    $(id).addEventListener("input", () => {
+        if (initialized3D && id === "fabricColor") {
+            updateOutfit();
+        }
     });
-
-    container.addEventListener("pointermove", event => {
-        if (!dragging || !mannequin) return;
-
-        const difference = event.clientX - previousX;
-        mannequin.rotation.y += difference * 0.009;
-        previousX = event.clientX;
-    });
-
-    ["pointerup", "pointercancel", "lostpointercapture"].forEach(type => {
-        container.addEventListener(type, () => dragging = false);
-    });
-
-    container.addEventListener("wheel", event => {
-        event.preventDefault();
-
-        camera.position.z = Math.max(
-            5.5,
-            Math.min(11, camera.position.z + event.deltaY * 0.005)
-        );
-
-        camera.lookAt(0, 1.85, 0);
-    }, { passive: false });
-}
-
-$("rotateModel").addEventListener("click", () => {
-    rotating = !rotating;
-
-    $("rotateModel").textContent =
-        rotating ? "Pause Rotation" : "Start Rotation";
 });
 
-// ==========================================
-// RENDERING
-// ==========================================
-
-function animate3D() {
-    animationId = requestAnimationFrame(animate3D);
-
-    if (rotating && mannequin && currentPage === "mannequin") {
-        mannequin.rotation.y += 0.0025;
-    }
-
-    if (renderer && scene && camera) {
-        renderer.render(scene, camera);
-    }
-}
-
-function resize3D() {
-    if (!renderer || !camera) return;
-
-    const container = $("threeContainer");
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    if (!width || !height) return;
-
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-}
-
-window.addEventListener("resize", resize3D);
-
-// ==========================================
-// SAVE AND COLLECTION
-// ==========================================
-
-function loadSavedDesigns() {
-    try {
-        savedDesigns = JSON.parse(
-            localStorage.getItem("fashionDesigns")
-        ) || [];
-    } catch {
-        savedDesigns = [];
-    }
-}
-
-function saveDesign() {
-    const name = prompt("Name your fashion creation:");
-    if (!name || !name.trim()) return;
-
-    if (currentPage === "mannequin" && renderer) {
-        renderer.render(scene, camera);
-    }
-
-    const preview = currentPage === "sketch"
-        ? canvas.toDataURL("image/png")
-        : renderer
-            ? renderer.domElement.toDataURL("image/png")
-            : "";
-
-    const design = {
-        id: Date.now(),
-        name: name.trim(),
-        type: $("outfitType").value,
-        color: $("fabricColor").value,
-        pattern: $("fabricPattern").value,
-        preview,
-        sketch: canvas.toDataURL("image/png"),
-        date: new Date().toLocaleDateString()
-    };
-
-    savedDesigns.unshift(design);
-
-    try {
-        localStorage.setItem(
-            "fashionDesigns",
-            JSON.stringify(savedDesigns)
-        );
-        showToast("Design saved to your collection!");
-    } catch {
-        savedDesigns.shift();
-        showToast("Storage full. Delete an older design.");
-    }
-}
-
-$("saveDesign").addEventListener("click", saveDesign);
-
-function renderCollection() {
-    const grid = $("collectionGrid");
-    const empty = $("emptyMessage");
-
-    loadSavedDesigns();
-    grid.innerHTML = "";
-
-    empty.style.display = savedDesigns.length ? "none" : "block";
-
-    savedDesigns.forEach(design => {
-        const card = document.createElement("div");
-        card.className = "collection-item";
-
-        const image = document.createElement("img");
-        image.src = design.preview || "";
-        image.alt = design.name;
-        image.style.width = "100%";
-        image.style.height = "160px";
-        image.style.objectFit = "contain";
-
-        const title = document.createElement("h3");
-        title.textContent = design.name;
-
-        const details = document.createElement("p");
-      
-details.textContent = `${design.type} • ${design.date}`;
-
-const deleteButton = document.createElement("button");
-deleteButton.textContent = "Delete";
-
-deleteButton.addEventListener("click", () => {
-    savedDesigns = savedDesigns.filter(
-        item => item.id !== design.id
-    );
-
-    localStorage.setItem(
-        "fashionDesigns",
-        JSON.stringify(savedDesigns)
-    );
-
-    renderCollection();
-});
-
-card.append(image, title, details, deleteButton);
-grid.appendChild(card);
-});
-}
-
-loadSavedDesigns();
-
+$("a
