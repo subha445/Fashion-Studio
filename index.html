@@ -2,347 +2,269 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Fashion Studio | Design Your World</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#783c48">
+  <title>Fashion Studio | Create Your World</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js"></script>
+  <script src="script.js" defer></script>
 </head>
-
 <body>
 
 <header class="topbar">
-    <div class="brand">
-        <span class="brand-icon">F</span>
-        <div>
-            <h1>FASHION STUDIO</h1>
-            <p>CREATE YOUR OWN COLLECTION</p>
-        </div>
-    </div>
-
-    <button class="save-btn" id="saveDesign">Save Design</button>
+  <a class="brand" href="#">
+    <span class="brand-icon">F</span>
+    <span>
+      <strong>FASHION STUDIO</strong>
+      <small>YOUR DIGITAL ATELIER</small>
+    </span>
+  </a>
+  <div class="header-actions">
+    <span class="status"><i></i> Studio ready</span>
+    <button class="primary-btn" id="saveDesign">♡ Save Design</button>
+  </div>
 </header>
 
-<main class="workspace">
+<div class="workspace">
+  <aside class="sidebar">
+    <div class="side-label">WORKSPACE</div>
+    <button class="tab active" data-tab="sketch"><span>✎</span> 2D Sketch Studio</button>
+    <button class="tab" data-tab="mannequin"><span>◇</span> 3D Fashion Studio</button>
+    <button class="tab" data-tab="collection"><span>▤</span> My Collection <b id="collectionCount">0</b></button>
+    <div class="sidebar-bottom">
+      <div class="side-label">YOUR CREATIVE SPACE</div>
+      <p>Imagine it.<br>Design it. Wear it.</p>
+      <span>FASHION STUDIO · 2026</span>
+    </div>
+  </aside>
 
-    <aside class="sidebar">
-        <h2>Design tools</h2>
+  <main class="main-content">
 
-        <button class="tab active" data-tab="sketch">
-            ✏️ 2D Sketch Studio
-        </button>
-
-        <button class="tab" data-tab="mannequin">
-            👗 3D Fashion Studio
-        </button>
-
-        <button class="tab" data-tab="collection">
-            📁 My Collection
-        </button>
-
-        <div class="sidebar-info">
-            <p>YOUR CREATIVE SPACE</p>
-            <span>Design • Create • Inspire</span>
+    <!-- 2D STUDIO -->
+    <section class="page active" id="sketch">
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">THE CREATIVE SKETCHBOOK</span>
+          <h1>2D Design Studio</h1>
+          <p>Bring your fashion ideas to life, one stroke at a time.</p>
         </div>
-    </aside>
-
-    <section class="main-content">
-
-        <!-- 2D SKETCH STUDIO -->
-
-        <section class="page active" id="sketch">
-
-            <div class="page-heading">
-                <div>
-                    <h2>2D Design Studio</h2>
-                    <p>Draw your own fashion ideas.</p>
-                </div>
-
-                <span class="tag">SKETCH MODE</span>
-            </div>
-
-            <div class="editor-layout">
-
-                <div class="canvas-card">
-
-                    <div class="canvas-toolbar">
-                        <span>Design Canvas</span>
-                        <button id="clearCanvas">Clear</button>
-                    </div>
-
-                    <canvas
-                        id="designCanvas"
-                        width="900"
-                        height="650">
-                    </canvas>
-
-                    <div class="canvas-footer">
-                        <span>Draw using your mouse or finger</span>
-                        <button id="downloadSketch">
-                            Download Sketch
-                        </button>
-                    </div>
-
-                </div>
-
-                <div class="tool-panel">
-
-                    <h3>Drawing tools</h3>
-
-                    <label>Brush colour</label>
-                    <input
-                        type="color"
-                        id="brushColor"
-                        value="#b35b45">
-
-                    <label>Brush size</label>
-                    <input
-                        type="range"
-                        id="brushSize"
-                        min="1"
-                        max="35"
-                        value="5">
-
-                    <label>Tool</label>
-                    <select id="drawingTool">
-                        <option value="pen">Pen</option>
-                        <option value="eraser">Eraser</option>
-                    </select>
-
-                    <div class="tip">
-                        <strong>Design tip</strong>
-                        <p>
-                            Start with the outline of your outfit,
-                            then add sleeves, patterns and details.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- 3D FASHION STUDIO -->
-
-        <section class="page" id="mannequin">
-
-            <div class="page-heading">
-                <div>
-                    <h2>3D Fashion Studio</h2>
-                    <p>Create your own complete fashion collection.</p>
-                </div>
-
-                <span class="tag">3D MODE</span>
-            </div>
-
-            <div class="three-layout">
-
-                <div class="three-card">
-
-                    <div class="three-toolbar">
-                        <span>Virtual Fashion Model</span>
-
-                        <button id="rotateModel">
-                            Pause Rotation
-                        </button>
-                    </div>
-
-                    <div id="threeContainer"></div>
-
-                    <p class="model-hint">
-                        Drag to rotate • Scroll to zoom
-                    </p>
-
-                </div>
-
-
-                <!-- OUTFIT CONTROLS -->
-
-                <div class="tool-panel">
-
-                    <h3>Outfit Designer</h3>
-
-                    <label>Fashion category</label>
-
-                    <select id="outfitType">
-
-                        <optgroup label="TOPS">
-                            <option value="top">Classic Top</option>
-                            <option value="shirt">Formal Shirt</option>
-                            <option value="tshirt">T-Shirt</option>
-                            <option value="blouse">Designer Blouse</option>
-                            <option value="crop">Crop Top</option>
-                        </optgroup>
-
-                        <optgroup label="OUTERWEAR">
-                            <option value="jacket">Jacket</option>
-                            <option value="blazer">Blazer</option>
-                            <option value="hoodie">Hoodie</option>
-                            <option value="sweater">Sweater</option>
-                        </optgroup>
-
-                        <optgroup label="BOTTOMS">
-                            <option value="trousers">Trousers</option>
-                            <option value="jeans">Jeans</option>
-                            <option value="shorts">Shorts</option>
-                            <option value="skirt">Skirt</option>
-                        </optgroup>
-
-                        <optgroup label="DRESSES">
-                            <option value="dress">Designer Dress</option>
-                            <option value="gown">Evening Gown</option>
-                            <option value="maxi">Maxi Dress</option>
-                            <option value="party">Party Dress</option>
-                        </optgroup>
-
-                        <optgroup label="TRADITIONAL">
-                            <option value="traditional">
-                                Traditional Outfit
-                            </option>
-                            <option value="ethnic">
-                                Ethnic Wear
-                            </option>
-                        </optgroup>
-
-                    </select>
-
-
-                    <label>Fabric colour</label>
-
-                    <input
-                        type="color"
-                        id="fabricColor"
-                        value="#b35b45">
-
-
-                    <label>Fabric pattern</label>
-
-                    <select id="fabricPattern">
-                        <option value="plain">Plain</option>
-                        <option value="soft">Soft Finish</option>
-                        <option value="shiny">Silky Finish</option>
-                        <option value="floral">Floral Style</option>
-                        <option value="striped">Striped Style</option>
-                    </select>
-
-
-                    <label>Fabric type</label>
-
-                    <select id="fabricType">
-                        <option value="cotton">Cotton</option>
-                        <option value="silk">Silk</option>
-                        <option value="denim">Denim</option>
-                        <option value="satin">Satin</option>
-                        <option value="linen">Linen</option>
-                        <option value="velvet">Velvet</option>
-                    </select>
-
-
-                    <label>Accessories</label>
-
-                    <select id="accessoryType">
-                        <option value="none">No Accessories</option>
-                        <option value="bag">Handbag</option>
-                        <option value="belt">Belt</option>
-                        <option value="necklace">Necklace</option>
-                        <option value="hat">Hat</option>
-                    </select>
-
-
-                    <h3>Popular colours</h3>
-
-                    <div class="swatches">
-
-                        <span data-color="#b35b45"
-                              style="background:#b35b45"></span>
-
-                        <span data-color="#263b57"
-                              style="background:#263b57"></span>
-
-                        <span data-color="#c49a54"
-                              style="background:#c49a54"></span>
-
-                        <span data-color="#667c62"
-                              style="background:#667c62"></span>
-
-                        <span data-color="#a77b91"
-                              style="background:#a77b91"></span>
-
-                        <span data-color="#eee1ca"
-                              style="background:#eee1ca"></span>
-
-                        <span data-color="#191919"
-                              style="background:#191919"></span>
-
-                        <span data-color="#ffffff"
-                              style="background:#ffffff"></span>
-
-                        <span data-color="#8e303b"
-                              style="background:#8e303b"></span>
-
-                        <span data-color="#d7a6a0"
-                              style="background:#d7a6a0"></span>
-
-                    </div>
-
-
-                    <button class="apply-btn" id="applyOutfit">
-                        Apply Design
-                    </button>
-
-                    <div class="tip">
-                        <strong>Your Fashion Studio</strong>
-                        <p>
-                            Choose your favourite clothes, fabrics,
-                            colours and accessories to create a design.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- MY COLLECTION -->
-
-        <section class="page" id="collection">
-
-            <div class="page-heading">
-                <div>
-                    <h2>My Collection</h2>
-                    <p>Your saved fashion creations.</p>
-                </div>
-
-                <span class="tag">MY DESIGNS</span>
-            </div>
-
-            <div
-                id="collectionGrid"
-                class="collection-grid">
-            </div>
-
-            <p id="emptyMessage" class="empty-message">
-                No designs saved yet. Start creating something!
-            </p>
-
-        </section>
-
+        <span class="mode-tag">01 / SKETCH</span>
+      </div>
+
+      <div class="editor-layout">
+        <div class="canvas-card">
+          <div class="canvas-toolbar">
+            <div><span class="live-dot"></span> <strong>Design Canvas</strong></div>
+            <button class="soft-btn" id="clearCanvas">Clear canvas</button>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="designCanvas" width="1000" height="720"></canvas>
+          </div>
+          <div class="canvas-footer">
+            <span>✎ Draw with your mouse or finger</span>
+            <button class="primary-btn" id="downloadSketch">↓ Download PNG</button>
+          </div>
+        </div>
+
+        <aside class="tool-panel">
+          <span class="eyebrow">YOUR TOOLKIT</span>
+          <h2>Drawing tools</h2>
+
+          <label for="brushColor">Brush colour</label>
+          <input type="color" id="brushColor" value="#783c48">
+
+          <label for="brushSize">Brush size <output id="brushSizeValue">6 px</output></label>
+          <input type="range" id="brushSize" min="1" max="45" value="6">
+
+          <label for="drawingTool">Drawing mode</label>
+          <select id="drawingTool">
+            <option value="pen">✎ Pen</option>
+            <option value="eraser">◯ Eraser</option>
+          </select>
+
+          <div class="tool-buttons">
+            <button class="soft-btn" id="undoCanvas">↶ Undo</button>
+            <button class="soft-btn" id="redoCanvas">↷ Redo</button>
+          </div>
+
+          <div class="palette-heading">QUICK COLOURS</div>
+          <div class="quick-colors">
+            <button data-color="#783c48" style="--swatch:#783c48" aria-label="Wine"></button>
+            <button data-color="#c5a16b" style="--swatch:#c5a16b" aria-label="Gold"></button>
+            <button data-color="#263b57" style="--swatch:#263b57" aria-label="Navy"></button>
+            <button data-color="#667c62" style="--swatch:#667c62" aria-label="Green"></button>
+            <button data-color="#a77b91" style="--swatch:#a77b91" aria-label="Mauve"></button>
+            <button data-color="#d7a6a0" style="--swatch:#d7a6a0" aria-label="Rose"></button>
+            <button data-color="#252525" style="--swatch:#252525" aria-label="Black"></button>
+            <button data-color="#e9dfd2" style="--swatch:#e9dfd2" aria-label="Cream"></button>
+          </div>
+
+          <div class="tip">
+            <strong>✦ Designer's note</strong>
+            <p>Start with an outline, experiment with colours, and add the little details that make your design unique.</p>
+          </div>
+        </aside>
+      </div>
     </section>
 
-</main>
+    <!-- 3D STUDIO -->
+    <section class="page" id="mannequin">
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">THE VIRTUAL FITTING ROOM</span>
+          <h1>3D Fashion Studio</h1>
+          <p>Style your outfit and explore it on a virtual model.</p>
+        </div>
+        <span class="mode-tag">02 / 3D</span>
+      </div>
 
-<div id="toast" class="toast"></div>
+      <div class="three-layout">
+        <div class="three-card">
+          <div class="three-toolbar">
+            <strong>Virtual Fashion Model</strong>
+            <button class="soft-btn" id="rotateModel">Ⅱ Pause rotation</button>
+          </div>
+          <div id="threeContainer">
+            <div class="loading-message" id="threeLoading">Preparing your runway...</div>
+          </div>
+          <div class="canvas-footer">
+            <span>Drag to rotate · Scroll to zoom</span>
+            <button class="soft-btn" id="download3D">↓ Save preview</button>
+          </div>
+        </div>
 
+        <aside class="tool-panel outfit-panel">
+          <span class="eyebrow">CUSTOMISE YOUR LOOK</span>
+          <h2>Outfit Designer</h2>
 
-<!-- THREE.JS -->
+          <label for="outfitType">Clothing category</label>
+          <select id="outfitType">
+            <optgroup label="TOPS">
+              <option value="top">Classic Top</option>
+              <option value="shirt">Formal Shirt</option>
+              <option value="tshirt">T-Shirt</option>
+              <option value="blouse">Designer Blouse</option>
+              <option value="crop">Crop Top</option>
+            </optgroup>
+            <optgroup label="OUTERWEAR">
+              <option value="jacket">Jacket</option>
+              <option value="blazer">Blazer</option>
+              <option value="hoodie">Hoodie</option>
+            </optgroup>
+            <optgroup label="BOTTOMS">
+              <option value="trousers">Trousers</option>
+              <option value="jeans">Jeans</option>
+              <option value="shorts">Shorts</option>
+              <option value="skirt">Skirt</option>
+            </optgroup>
+            <optgroup label="DRESSES">
+              <option value="dress">Designer Dress</option>
+              <option value="gown">Evening Gown</option>
+              <option value="maxi">Maxi Dress</option>
+              <option value="party">Party Dress</option>
+            </optgroup>
+            <optgroup label="TRADITIONAL">
+              <option value="traditional">Traditional Outfit</option>
+              <option value="ethnic">Ethnic Wear</option>
+            </optgroup>
+          </select>
 
-<script src="script.js"></script>
+          <label for="fabricColor">Fabric colour</label>
+          <div class="color-control">
+            <input type="color" id="fabricColor" value="#783c48">
+            <span id="colorValue">#783C48</span>
+          </div>
+
+          <div class="palette-heading">COLOUR COLLECTION</div>
+          <div class="swatches">
+            <button data-color="#783c48" style="--swatch:#783c48" aria-label="Wine"></button>
+            <button data-color="#263b57" style="--swatch:#263b57" aria-label="Navy"></button>
+            <button data-color="#c49a54" style="--swatch:#c49a54" aria-label="Gold"></button>
+            <button data-color="#667c62" style="--swatch:#667c62" aria-label="Olive"></button>
+            <button data-color="#a77b91" style="--swatch:#a77b91" aria-label="Mauve"></button>
+            <button data-color="#eee1ca" style="--swatch:#eee1ca" aria-label="Cream"></button>
+            <button data-color="#191919" style="--swatch:#191919" aria-label="Black"></button>
+            <button data-color="#ffffff" style="--swatch:#ffffff" aria-label="White"></button>
+            <button data-color="#8e303b" style="--swatch:#8e303b" aria-label="Ruby"></button>
+            <button data-color="#d7a6a0" style="--swatch:#d7a6a0" aria-label="Rose"></button>
+          </div>
+
+          <label for="fabricPattern">Fabric pattern</label>
+          <select id="fabricPattern">
+            <option value="plain">Plain</option>
+            <option value="soft">Soft finish</option>
+            <option value="shiny">Silky finish</option>
+            <option value="floral">Floral details</option>
+            <option value="striped">Striped</option>
+          </select>
+
+          <label for="fabricType">Fabric material</label>
+          <select id="fabricType">
+            <option value="cotton">Cotton</option>
+            <option value="silk">Silk</option>
+            <option value="denim">Denim</option>
+            <option value="satin">Satin</option>
+            <option value="linen">Linen</option>
+            <option value="velvet">Velvet</option>
+          </select>
+
+          <label for="accessoryType">Accessories</label>
+          <select id="accessoryType">
+            <option value="none">No accessories</option>
+            <option value="bag">Handbag</option>
+            <option value="belt">Belt</option>
+            <option value="necklace">Necklace</option>
+            <option value="hat">Hat</option>
+          </select>
+
+          <button class="primary-btn full-btn" id="applyOutfit">✦ Apply design</button>
+          <p class="panel-note">Your changes appear on the model automatically.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- COLLECTION -->
+    <section class="page" id="collection">
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">YOUR PERSONAL ARCHIVE</span>
+          <h1>My Collection</h1>
+          <p>A little home for all your fashion creations.</p>
+        </div>
+        <span class="mode-tag">03 / ARCHIVE</span>
+      </div>
+
+      <div class="collection-top">
+        <div><strong id="designTotal">0 designs</strong><span> · Your creative journey</span></div>
+        <select id="collectionFilter">
+          <option value="all">All designs</option>
+          <option value="3d">3D designs</option>
+          <option value="2d">2D sketches</option>
+          <option value="favorites">Favourites</option>
+        </select>
+      </div>
+
+      <div id="collectionGrid" class="collection-grid"></div>
+      <div id="emptyMessage" class="empty-message">
+        <div>✧</div>
+        <h2>Your collection starts here.</h2>
+        <p>Save your first design and watch your creative archive grow.</p>
+        <button class="primary-btn" id="startDesigning">Start designing</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<footer class="footer">
+  <span>FASHION STUDIO</span>
+  <span>DESIGNED WITH CREATIVITY ♡</span>
+</footer>
 
 </body>
-            </html>
-            
+</html>
