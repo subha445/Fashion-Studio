@@ -800,10 +800,155 @@ function loadSavedDesigns() {
   updateCollectionCount();
 }
 
+
 function persistDesigns() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedDesigns));
     updateCollectionCount();
     return true;
   } catch (error) {
-    showToast("Storage full. Delete s
+    showToast("Storage full. Delete some saved designs.");
+    return false;
+  }
+}
+
+function updateCollectionCount() {
+  $("collectionCount").textContent = savedDesigns.length;
+  $("designTotal").textContent =
+    savedDesigns.length + (savedDesigns.length === 1 ? " design" : " designs");
+}
+
+function renderCollection() {
+  const grid = $("collectionGrid");
+  const empty = $("emptyMessage");
+  const filter = $("collectionFilter").value;
+
+  let designs = [...savedDesigns];
+
+  if (filter === "2d") {
+    designs = designs.filter(item => item.mode === "2d");
+  } else if (filter === "3d") {
+    designs = designs.filter(item => item.mode === "3d");
+  } else if (filter === "favorites") {
+    designs = designs.filter(item => item.favorite);
+  }
+
+  grid.innerHTML = "";
+  empty.style.display = designs.length ? "none" : "block";
+
+  designs.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "design-card";
+
+    const image = document.createElement("img");
+    image.src = item.preview || "";
+    image.alt = item.name;
+
+    const info = document.createElement("div");
+    info.className = "design-card-info";
+
+    const heading = document.createElement("h3");
+    heading.textContent = item.name;
+
+    const description = document.createElement("p");
+    description.textContent =
+      item.mode.toUpperCase() + " DESIGN";
+
+    const actions = document.createElement("div");
+    actions.className = "design-card-actions";
+
+    const open = document.createElement("button");
+    open.textContent = "Open";
+    open.addEventListener("click", () => openDesign(item.id));
+
+    const favorite = document.createElement("button");
+    favorite.textContent = item.favorite ? "♥" : "♡";
+    favorite.addEventListener("click", () => toggleFavorite(item.id));
+
+    const remove = document.createElement("button");
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => deleteDesign(item.id));
+
+    actions.append(open, favorite, remove);
+    info.append(heading, description, actions);
+    card.append(image, info);
+    grid.appendChild(card);
+  });
+
+  updateCollectionCount();
+}
+
+function saveCurrentDesign() {
+  const name = prompt("Enter a name for your design:");
+
+  if (!name || !name.trim()) return;
+
+  const preview = getPreview();
+
+  const design = {
+    id: Date.now().toString(),
+    name: name.trim(),
+    mode: currentPage === "sketch" ? "2d" : "3d",
+    preview,
+    settings: getDesignSettings(),
+    favorite: false,
+    createdAt: new Date().toISOString()
+  };
+
+  savedDesigns.unshift(design);
+
+  if (persistDesigns()) {
+    renderCollection();
+    showToast("Design saved to your collection!");
+  } else {
+    savedDesigns.shift();
+  }
+}
+
+function deleteDesign(id) {
+  if (!confirm("Delete this design?")) return;
+
+  savedDesigns = savedDesigns.filter(item => item.id !== id);
+  persistDesigns();
+  renderCollection();
+  showToast("Design deleted.");
+}
+
+function toggleFavorite(id) {
+  const design = savedDesigns.find(item => item.id === id);
+  if (!design) return;
+
+  design.favorite = !design.favorite;
+  persistDesigns();
+  renderCollection();
+}
+
+function openDesign(id) {
+  const design = savedDesigns.find(item => item.id === id);
+  if (!design) return;
+
+  if (design.mode === "2d") {
+    document.querySelector('[data-tab="sketch"]').click();
+    restoreCanvasState(design.preview);
+  } else {
+    document.querySelector('[data-tab="mannequin"]').click();
+
+    const settings = design.settings;
+    $("outfitType").value = settings.type;
+    $("fabricColor").value = settings.color;
+    $("fabricPattern").value = settings.pattern;
+    $("fabricType").value = settings.fabric;
+    $("accessoryType").value = settings.accessory;
+    $("colorValue").textContent = settings.color.toUpperCase();
+
+    updateOutfit();
+  }
+}
+
+$("saveDesign").addEventListener("click", saveCurrentDesign);
+
+$("collectionFilter").addEventListener("change", renderCollection);
+
+loadSavedDesigns();
+renderCollection();
+     
